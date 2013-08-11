@@ -14,7 +14,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.cliffc.high_scale_lib.NonBlockingHashSet;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.netflix.astyanax.connectionpool.Host;
 import com.netflix.astyanax.connectionpool.HostConnectionPool;
 import com.netflix.astyanax.connectionpool.LatencyScoreStrategy;
 
@@ -38,6 +40,7 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
     private final String                   name;
     private final double                   keepRatio;
     private boolean                  bOwnedExecutor = false;
+    private String preferredDataCenter = Host.UKNOWN_DC;
 
     public AbstractLatencyScoreStrategyImpl(String name, int updateInterval, int resetInterval, int blockedThreshold, double keepRatio, double scoreThreshold, ScheduledExecutorService executor) {
         this.updateInterval   = updateInterval;
@@ -49,6 +52,18 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
 
         this.executor  = executor;
         this.instances = new NonBlockingHashSet<Instance>();
+    }
+    
+    /**
+     * 
+     * @param name
+     * @param updateInterval    In milliseconds
+     * @param resetInterval     In milliseconds
+     */
+    public AbstractLatencyScoreStrategyImpl(String name, int updateInterval, int resetInterval, int blockedThreshold, double keepRatio, double scoreThreshold, String preferredDataCenter) {
+        this(name, updateInterval, resetInterval, blockedThreshold, keepRatio, scoreThreshold, Executors.newScheduledThreadPool(1, new ThreadFactoryBuilder().setDaemon(true).build()));
+        bOwnedExecutor = true;
+        this.preferredDataCenter = preferredDataCenter;
     }
     
     /**
@@ -157,14 +172,28 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
         int poolSize = pools.size();
         int keep     = (int) Math.max(1, Math.ceil(poolSize * getKeepRatio()));
 
-        // Step 1: Remove any host that is current reconnecting
-        Iterator<HostConnectionPool<CL>> iter = pools.iterator();
+        Set<String> downedDC = Sets.newHashSet();
+        // Step 1.5: Remove any host that is current reconnecting. Might be safe with token aware to check for all but one
+        Iterator<HostConnectionPool<CL>>iter = pools.iterator();
         while (iter.hasNext()) {
             HostConnectionPool<CL> pool = iter.next();
             if (pool.isReconnecting()) {
 //                System.out.println("**** Removing host (reconnecting) : " + pool.toString());
+            		downedDC.add(pool.getHost().getDC());
                 iter.remove();
             }
+        }
+        
+     // Step 1: Remove any host that is not the preferred DC if there are no problems
+        if(!downedDC.contains(this.preferredDataCenter)) {
+	        iter = pools.iterator();
+	        while (iter.hasNext()) {
+	            HostConnectionPool<CL> pool = iter.next();
+	            if (!this.preferredDataCenter.equals(pool.getHost().getDC())) {
+	                System.out.println("**** Removing host (notmydc) : " + pool.toString());
+	                iter.remove();
+	            }
+	        }
         }
        
 	//step 2  

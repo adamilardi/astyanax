@@ -60,6 +60,7 @@ import com.netflix.astyanax.connectionpool.exceptions.IsDeadConnectionException;
 import com.netflix.astyanax.connectionpool.exceptions.NotFoundException;
 import com.netflix.astyanax.connectionpool.exceptions.OperationException;
 import com.netflix.astyanax.connectionpool.exceptions.SchemaDisagreementException;
+import com.netflix.astyanax.connectionpool.impl.EndPointWrapper;
 import com.netflix.astyanax.connectionpool.impl.TokenRangeImpl;
 import com.netflix.astyanax.cql.CqlStatement;
 import com.netflix.astyanax.ddl.ColumnFamilyDefinition;
@@ -187,7 +188,7 @@ public final class ThriftKeyspaceImpl implements Keyspace {
                         List<TokenRange> range = Lists.newArrayList();
 
                         for (org.apache.cassandra.thrift.TokenRange tr : trs) {
-                            List<String> endpoints = Lists.newArrayList();
+                            List<EndPointWrapper> endpoints = Lists.newArrayList();
                             for (org.apache.cassandra.thrift.EndpointDetails ed : tr.getEndpoint_details()) {
                                 if (dc != null && !ed.getDatacenter().equals(dc)) {
                                     continue;
@@ -196,7 +197,7 @@ public final class ThriftKeyspaceImpl implements Keyspace {
                                     continue;
                                 }
                                 else {
-                                    endpoints.add(ed.getHost());
+                                    endpoints.add(new EndPointWrapper(ed.getHost(), ed.getDatacenter(), ed.getRack()));
                                 }
                             }
 

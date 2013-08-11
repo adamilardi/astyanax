@@ -9,6 +9,7 @@ import org.apache.commons.codec.binary.Hex;
 
 import com.google.common.collect.Lists;
 import com.netflix.astyanax.connectionpool.TokenRange;
+import com.netflix.astyanax.connectionpool.impl.EndPointWrapper;
 import com.netflix.astyanax.connectionpool.impl.TokenRangeImpl;
 
 public class BOP20Partitioner implements Partitioner {
@@ -38,7 +39,7 @@ public class BOP20Partitioner implements Partitioner {
                 endToken = getMinToken();
             else
                 endToken = getSegmentToken(count, i+1, new BigInteger(first, 16), new BigInteger(last, 16));
-            tokens.add(new TokenRangeImpl(startToken, endToken, new ArrayList<String>()));
+            tokens.add(new TokenRangeImpl(startToken, endToken, new ArrayList<EndPointWrapper>()));
         }
         return tokens;
     }

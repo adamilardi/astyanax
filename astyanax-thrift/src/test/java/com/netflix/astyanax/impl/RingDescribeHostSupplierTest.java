@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import com.netflix.astyanax.connectionpool.Host;
 import com.netflix.astyanax.connectionpool.TokenRange;
+import com.netflix.astyanax.connectionpool.impl.EndPointWrapper;
 import com.netflix.astyanax.test.TestKeyspace;
 import com.netflix.astyanax.test.TestTokenRange;
 
@@ -61,9 +62,9 @@ public class RingDescribeHostSupplierTest {
 
     private List<TokenRange> createTokenRange() {
        List<TokenRange> tokenRanges = new ArrayList<TokenRange>();
-       TokenRange node1Range = new TestTokenRange(RANGE_3_END_TOKEN, RANGE_1_END_TOKEN, Arrays.asList(NODE1));
-       TokenRange node2Range = new TestTokenRange(RANGE_1_END_TOKEN, RANGE_2_END_TOKEN, Arrays.asList(NODE2));
-       TokenRange node3Range = new TestTokenRange(RANGE_2_END_TOKEN, RANGE_3_END_TOKEN, Arrays.asList(NODE3));
+       TokenRange node1Range = new TestTokenRange(RANGE_3_END_TOKEN, RANGE_1_END_TOKEN, Arrays.asList(new EndPointWrapper(NODE1, "", "")));
+       TokenRange node2Range = new TestTokenRange(RANGE_1_END_TOKEN, RANGE_2_END_TOKEN, Arrays.asList(new EndPointWrapper(NODE2, "", "")));
+       TokenRange node3Range = new TestTokenRange(RANGE_2_END_TOKEN, RANGE_3_END_TOKEN, Arrays.asList(new EndPointWrapper(NODE3, "", "")));
        tokenRanges.addAll(Arrays.asList(node1Range, node2Range, node3Range));
        return tokenRanges;
     }

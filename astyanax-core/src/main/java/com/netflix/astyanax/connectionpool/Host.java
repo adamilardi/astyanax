@@ -37,12 +37,14 @@ public class Host implements Comparable<Host> {
 
     public static final Host NO_HOST = new Host();
     public static final String UKNOWN_RACK = "";
+    public static final String UKNOWN_DC = "";
     
     private final String host;
     private final String ipAddress;
     private final int    port;
     private final String name;
     private final String url;
+    private String 		 dc = UKNOWN_DC;
     private String       rack = UKNOWN_RACK;
     private String       id;
     private Set<String>  alternateIpAddress = Sets.newHashSet();
@@ -182,6 +184,15 @@ public class Host implements Comparable<Host> {
     
     public String getRack() {
         return rack;
+    }
+    
+    public Host setDC(String dc) {
+        this.dc = dc;
+        return this;
+    }
+    
+    public String getDC() {
+        return dc;
     }
  
     public synchronized Host setTokenRanges(List<TokenRange> ranges) {

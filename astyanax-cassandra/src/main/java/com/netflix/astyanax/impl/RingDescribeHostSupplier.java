@@ -28,6 +28,7 @@ import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.Host;
 import com.netflix.astyanax.connectionpool.TokenRange;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
+import com.netflix.astyanax.connectionpool.impl.EndPointWrapper;
 
 /**
  * HostSupplier that uses existing hosts in the connection pool to execute a ring
@@ -65,12 +66,16 @@ public class RingDescribeHostSupplier implements Supplier<List<Host>> {
         try {
             Map<String, Host> ipToHost = Maps.newHashMap();
 
+            keyspace.describeKeyspace();
+            
             for (TokenRange range : keyspace.describeRing(dc, rack)) {
-                for (String endpoint : range.getEndpoints()) {
+                for (EndPointWrapper endpoint : range.getEndpoints()) {
                     Host host = ipToHost.get(endpoint);
                     if (host == null) {
-                        host = new Host(endpoint, defaultPort);
-                        ipToHost.put(endpoint, host);
+                        host = new Host(endpoint.getHost(), defaultPort);
+                        host.setDC(endpoint.getDc());
+                        host.setRack(endpoint.getRack());
+                        ipToHost.put(endpoint.getHost(), host);
                     }
                     
                     host.getTokenRanges().add(range);

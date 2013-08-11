@@ -17,6 +17,8 @@ package com.netflix.astyanax.connectionpool;
 
 import java.util.List;
 
+import com.netflix.astyanax.connectionpool.impl.EndPointWrapper;
+
 /**
  * Represents a contiguous range of tokens.
  * 
@@ -28,5 +30,6 @@ public interface TokenRange {
 
     String getEndToken();
     
-    List<String> getEndpoints();
+    List<EndPointWrapper> getEndpoints();
+    
 }

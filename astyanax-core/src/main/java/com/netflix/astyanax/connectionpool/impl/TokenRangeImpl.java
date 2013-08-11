@@ -22,12 +22,12 @@ import com.google.common.collect.Lists;
 import com.netflix.astyanax.connectionpool.TokenRange;
 
 public class TokenRangeImpl implements TokenRange {
-
-    private final String startToken;
+	
+	private final String startToken;
     private final String endToken;
-    private final List<String> endpoints;
+    private final List<EndPointWrapper> endpoints;
 
-    public TokenRangeImpl(String startToken, String endToken, List<String> endpoints) {
+    public TokenRangeImpl(String startToken, String endToken, List<EndPointWrapper> endpoints) {
         this.startToken = startToken;
         this.endToken = endToken;
         if (endpoints != null)
@@ -47,7 +47,7 @@ public class TokenRangeImpl implements TokenRange {
     }
 
     @Override
-    public List<String> getEndpoints() {
+    public List<EndPointWrapper> getEndpoints() {
         return this.endpoints;
     }
 

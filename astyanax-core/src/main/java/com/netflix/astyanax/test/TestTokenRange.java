@@ -21,15 +21,16 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.netflix.astyanax.connectionpool.Host;
 import com.netflix.astyanax.connectionpool.TokenRange;
+import com.netflix.astyanax.connectionpool.impl.EndPointWrapper;
 import com.netflix.astyanax.connectionpool.impl.TokenRangeImpl;
 import com.netflix.astyanax.util.TokenGenerator;
 
 public class TestTokenRange implements TokenRange {
     private String start;
     private String end;
-    private List<String> endpoints;
+    private List<EndPointWrapper> endpoints;
 
-    public TestTokenRange(String start, String end, List<String> endpoints) {
+    public TestTokenRange(String start, String end, List<EndPointWrapper> endpoints) {
         this.start = start;
         this.end = end;
         this.endpoints = endpoints;
@@ -46,7 +47,7 @@ public class TestTokenRange implements TokenRange {
     }
 
     @Override
-    public List<String> getEndpoints() {
+    public List<EndPointWrapper> getEndpoints() {
         return endpoints;
     }
     

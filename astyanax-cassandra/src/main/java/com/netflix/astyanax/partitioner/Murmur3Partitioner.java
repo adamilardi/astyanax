@@ -9,6 +9,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.netflix.astyanax.Serializer;
 import com.netflix.astyanax.connectionpool.TokenRange;
+import com.netflix.astyanax.connectionpool.impl.EndPointWrapper;
 import com.netflix.astyanax.connectionpool.impl.TokenRangeImpl;
 
 public class Murmur3Partitioner implements Partitioner {
@@ -50,7 +51,7 @@ public class Murmur3Partitioner implements Partitioner {
         String current = iter.next();
         while (iter.hasNext()) {
             String next = iter.next();
-            tokens.add(new TokenRangeImpl(current, next, new ArrayList<String>()));
+            tokens.add(new TokenRangeImpl(current, next, new ArrayList<EndPointWrapper>()));
             current = next;
         }
         return tokens;
