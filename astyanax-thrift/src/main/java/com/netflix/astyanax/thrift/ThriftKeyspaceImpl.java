@@ -123,12 +123,20 @@ public final class ThriftKeyspaceImpl implements Keyspace {
                 try {
                     OperationResult<Void> result = executeOperation(
                             new AbstractKeyspaceOperationImpl<Void>(
-                                    tracerFactory.newTracer(CassandraOperationType.BATCH_MUTATE), getPinnedHost(),
-                                    getKeyspaceName()) {
+                                    tracerFactory.newTracer(useAtomicBatch() ? CassandraOperationType.ATOMIC_BATCH_MUTATE : CassandraOperationType.BATCH_MUTATE), 
+                                                            getPinnedHost(),
+                                                            getKeyspaceName()) {
                                 @Override
                                 public Void internalExecute(Client client, ConnectionContext context) throws Exception {
-                                    client.batch_mutate(getMutationMap(),
-                                            ThriftConverter.ToThriftConsistencyLevel(getConsistencyLevel()));
+                                    // Mutation can be atomic or non-atomic. 
+                                    // see http://www.datastax.com/dev/blog/atomic-batches-in-cassandra-1-2 for details on atomic batches
+                                    if (useAtomicBatch()) {
+                                        client.atomic_batch_mutate(getMutationMap(),
+                                                ThriftConverter.ToThriftConsistencyLevel(getConsistencyLevel()));
+                                    } else {
+                                        client.batch_mutate(getMutationMap(),
+                                                ThriftConverter.ToThriftConsistencyLevel(getConsistencyLevel()));
+                                    }
                                     discardMutations();
                                     return null;
                                 }
@@ -756,7 +764,6 @@ public final class ThriftKeyspaceImpl implements Keyspace {
                             @Override
                             public SchemaChangeResult internalExecute(Client client, ConnectionContext context) throws Exception {
                                 precheckSchemaAgreement(client);
-                                System.out.println(ksDef);
                                 return new SchemaChangeResponseImpl().setSchemaId(client.system_add_keyspace(ksDef));
                             }
                         }, RunOnce.get());
